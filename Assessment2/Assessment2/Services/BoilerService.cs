@@ -60,6 +60,14 @@ namespace Assessment2.Services
             InterlockState newState = _boiler.Interlock == InterlockState.Open ? InterlockState.Closed : InterlockState.Open;
             _boiler.SetInterlock(newState);
             string message = $"Interlock Switch toggled to {newState}.";
+            BoilerStatus boilerStatus = _boiler.Status;
+            StatusChanged?.Invoke(
+                this,
+                new StatusChangedEventArgs(
+                    boilerStatus,
+                    boilerStatus,
+                    _boiler.Phase,
+                    _boiler.Interlock));
             await Notify(message, LogType.Info, cancellationToken);
         }
 
@@ -91,7 +99,6 @@ namespace Assessment2.Services
                     "Boiler is now operational.",
                     LogType.Success,
                     _operationCancellation.Token);
-
                 //await RunPhase(BoilerPhase.Operational, _operationCancellation.Token);
                 //await Notify(
                 //    "Boiler sequence stopped.",
