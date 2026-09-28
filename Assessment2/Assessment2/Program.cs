@@ -1,10 +1,17 @@
 ﻿namespace Assessment2
 {
+    /// <summary>
+    /// Represents the entry point of the application
+    /// </summary>
     internal class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// Entry point of the application. Initializes and runs the application.
+        /// </summary>
+        public static async Task Main()
         {
-            Console.WriteLine("Hello, World!");
+            Application application = new();
+            await application.Run();
         }
     }
 }
