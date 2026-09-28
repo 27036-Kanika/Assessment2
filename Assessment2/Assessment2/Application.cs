@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Assessment2.Models;
-using Assessment2.Services;
-using Assessment2.Views;
+﻿using Assessment2.Views;
 
 namespace Assessment2
 {
