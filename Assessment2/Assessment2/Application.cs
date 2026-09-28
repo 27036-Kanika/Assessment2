@@ -8,6 +8,9 @@ using Assessment2.Views;
 
 namespace Assessment2
 {
+    /// <summary>
+    /// Application class that manages the boiler control system, event logging, and user interface.
+    /// </summary>
     internal class Application
     {
 
@@ -20,6 +23,9 @@ namespace Assessment2
         private Task? _boilerOperationTask;
         private bool _isEventLogVisible;
 
+        /// <summary>
+        /// Initializes a new instance of the Application class, setting up services, views, and event subscriptions.
+        /// </summary>
         public Application()
         {
             Validator validator = new();
@@ -34,6 +40,10 @@ namespace Assessment2
             _validator = validator;
             SubscribeToEvents();
         }
+
+        /// <summary>
+        /// Runs the main application loop, initializing services and handling user input until the application is terminated.
+        /// </summary>
         public async Task Run()
         {
             try
@@ -61,6 +71,10 @@ namespace Assessment2
                 Console.CursorVisible = true;
             }
         }
+
+        /// <summary>
+        /// Runs the menu loop, reading user input and executing corresponding actions until the application is terminated.
+        /// </summary>
         private async Task RunMenuLoop()
         {
             bool isRunning = true;
@@ -79,6 +93,10 @@ namespace Assessment2
             }
         }
 
+        /// <summary>
+        /// Executes menu option
+        /// </summary>
+        /// <param name="option">Option to execute</param>
         private async Task<bool> ExecuteMenuOption( MenuOptions option)
         {
             switch (option)
@@ -114,6 +132,9 @@ namespace Assessment2
             return true;
         }
 
+        /// <summary>
+        /// Starts boiler sequence
+        /// </summary>
         private async Task StartBoilerSequence()
         {
             if (_boilerOperationTask is { IsCompleted: false })
@@ -126,6 +147,9 @@ namespace Assessment2
             _boilerOperationTask = _boilerService.Start(_applicationCancellation.Token);
         }
 
+        /// <summary>
+        /// Stops boiler sequence and waits for the operation to complete if it is running.
+        /// </summary>
         private async Task StopBoilerSequence()
         {
             await _boilerService.Stop(_applicationCancellation.Token);
@@ -136,6 +160,9 @@ namespace Assessment2
             }
         }
 
+        /// <summary>
+        /// Shows the event log by retrieving logs from the event log service and displaying them in the event log view. 
+        /// </summary>
         private async Task ShowEventLog()
         {
             _isEventLogVisible = true;
@@ -152,6 +179,10 @@ namespace Assessment2
                 DisplayDashboard();
             }
         }
+
+        /// <summary>
+        /// Displays dashboard
+        /// </summary>
         private void DisplayDashboard()
         {
             _mainView.DisplayDashboard(
@@ -161,6 +192,9 @@ namespace Assessment2
                 _boilerService.GetRemainingTime());
         }
 
+        /// <summary>
+        /// Subscribes to events from the boiler service to handle notifications, status changes, and timer updates.
+        /// </summary>
         private void SubscribeToEvents()
         {
             _boilerService.NotificationOccurred += OnNotificationOccurred;
@@ -168,6 +202,9 @@ namespace Assessment2
             _boilerService.TimerUpdated += OnTimerUpdated;
         }
 
+        /// <summary>
+        /// Occurs when a notification is raised by the boiler service. If the event log is not visible, it displays the notification in the main view.
+        /// </summary>
         private void OnNotificationOccurred(
             object? sender,
             NotificationEventArgs eventArgs)
@@ -178,6 +215,9 @@ namespace Assessment2
             }
         }
 
+        /// <summary>
+        /// Occurs when status changes
+        /// </summary>
         private void OnStatusChanged(
             object? sender,
             StatusChangedEventArgs eventArgs)
@@ -188,6 +228,9 @@ namespace Assessment2
             }
         }
 
+        /// <summary>
+        /// Occurs when timer updates
+        /// </summary>
         private void OnTimerUpdated(
             object? sender,
             EventArgs eventArgs)
@@ -199,6 +242,10 @@ namespace Assessment2
                     _boilerService.GetRemainingTime());
             }
         }
+
+        /// <summary>
+        /// Stops the application
+        /// </summary>
         private async Task Stop()
         {
             _applicationCancellation.Cancel();

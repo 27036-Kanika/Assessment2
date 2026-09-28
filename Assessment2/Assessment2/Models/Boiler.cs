@@ -2,8 +2,14 @@
 
 namespace Assessment2.Models
 {
+    /// <summary>
+    /// Boiler class represents the state and behavior of a boiler in the system.
+    /// </summary>
     internal class Boiler
     {
+        /// <summary>
+        /// Initializes a new instance of the Boiler class with default values.
+        /// </summary>
         public Boiler()
         {
             Status = BoilerStatus.Lockout;

@@ -5,6 +5,9 @@ using Assessment2.Models;
 
 namespace Assessment2.Repository
 {
+    /// <summary>
+    /// EventLogRepository is responsible for managing event logs, including adding new logs and retrieving existing logs from a file.
+    /// </summary>
     internal class EventLogRepository : IEventLogRepository
     {
         private const string FileName = "BoilerLog.txt";
@@ -12,16 +15,19 @@ namespace Assessment2.Repository
 
         private readonly IFileHandler _fileHandler;
 
+        /// <inheritdoc/>
         public EventLogRepository(IFileHandler fileHandler)
         {
             _fileHandler = fileHandler;
         }
 
+        /// <inheritdoc/>
         public async Task EnsureFile(CancellationToken cancellationToken)
         {
             await _fileHandler.EnsureFile(FileName, Header, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public async Task Add(EventLog eventLog, CancellationToken cancellationToken)
         {
             await EnsureFile(cancellationToken);
@@ -34,6 +40,7 @@ namespace Assessment2.Repository
             await _fileHandler.AppendLine(FileName, line, cancellationToken);
         }
 
+        /// <inheritdoc/>
         public async Task<IReadOnlyList<EventLog>> GetAll(CancellationToken cancellationToken)
         {
             await EnsureFile(cancellationToken);

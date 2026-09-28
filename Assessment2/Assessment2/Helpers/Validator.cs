@@ -2,8 +2,17 @@
 
 namespace Assessment2.Helpers
 {
+    /// <summary>
+    /// Validates user inputs
+    /// </summary>
     internal class Validator
     {
+        /// <summary>
+        /// Validates the menu option based on the key pressed by the user.
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <param name="option">Option</param>
+        /// <returns>True if the menu option is valid; otherwise, false.</returns>
         public bool ValidateMenuOption(ConsoleKey key, out MenuOptions option)
         {
             option = MenuOptions.Exit;
@@ -33,11 +42,22 @@ namespace Assessment2.Helpers
             return true;
         }
 
+        /// <summary>
+        /// Validates if the boiler can start based on its current status and interlock state.
+        /// </summary>
+        /// <param name="status">Status</param>
+        /// <param name="interlock">Interlock state</param>
+        /// <returns>True if the boiler can start; otherwise, false.</returns>
         public bool CanStart(BoilerStatus status, InterlockState interlock)
         {
             return status == BoilerStatus.Ready && interlock == InterlockState.Closed;
         }
 
+        /// <summary>
+        /// Validates if the boiler can stop based on its current status.
+        /// </summary>
+        /// <param name="status">Status</param>
+        /// <returns>True if the boiler can stop; otherwise, false.</returns>
         public bool CanStop(BoilerStatus status)
         {
             if (status == BoilerStatus.Running || status == BoilerStatus.Operational)
@@ -48,16 +68,34 @@ namespace Assessment2.Helpers
             return false;
         }
 
+        /// <summary>
+        /// simulates an error in the boiler if it is in the Operational state.
+        /// </summary>
+        /// <param name="status">Boiler status</param>
+        /// <returns>True if the boiler can simulate an error; otherwise, false.</returns>
         public bool CanSimulateError(BoilerStatus status)
         {
             return status == BoilerStatus.Operational;
         }
 
+        /// <summary>
+        /// resets the boiler if it is in the Lockout state and the interlock is closed.
+        /// </summary>
+        /// <param name="status">Boiler status</param>
+        /// <param name="interlock">Interlock state</param>
+        /// <returns>True if the boiler can be reset; otherwise, false.</returns>
         public bool CanReset(BoilerStatus status, InterlockState interlock)
         {
             return status == BoilerStatus.Lockout && interlock == InterlockState.Closed;
         }
 
+        /// <summary>
+        /// Invalid message for the menu option based on the current status and interlock state.
+        /// </summary>
+        /// <param name="option">Menu option</param>
+        /// <param name="status">Boiler status</param>
+        /// <param name="interlock">Interlock state</param>
+        /// <returns>Invalid message string</returns>
         public string GetInvalidMessage(MenuOptions option, BoilerStatus status, InterlockState interlock)
         {
             return option switch

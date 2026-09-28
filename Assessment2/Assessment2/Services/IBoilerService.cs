@@ -3,6 +3,9 @@ using Assessment2.Models;
 
 namespace Assessment2.Services
 {
+    /// <summary>
+    /// Interface for the boiler service, providing methods and events to manage and monitor the boiler's operation.
+    /// </summary>
     internal interface IBoilerService
     {
         event EventHandler<NotificationEventArgs>? NotificationOccurred;

@@ -2,8 +2,12 @@
 using Assessment2.Enums;
 using Assessment2.Helpers;
 using Assessment2.Models;
+
 namespace Assessment2.Services
 {
+    /// <summary>
+    /// BoilerService class that manages the boiler operations, including starting, stopping, resetting, and simulating errors.
+    /// </summary>
     internal class BoilerService : IBoilerService
     {
         private const int PhaseDurationSeconds = 10;
@@ -16,6 +20,12 @@ namespace Assessment2.Services
         private System.Timers.Timer? _timer;
         private TaskCompletionSource? _phaseCompletionSource;
 
+        /// <summary>
+        /// Initializes a new instance of the BoilerService class with the specified boiler, event log service, and validator.
+        /// </summary>
+        /// <param name="boiler">The boiler instance to be managed by the service.</param>
+        /// <param name="eventLogService">The event log service for logging boiler events.</param>
+        /// <param name="validator">The validator for validating boiler operations.</param>
         public BoilerService(
             Boiler boiler,
             IEventLogService eventLogService,
