@@ -50,12 +50,6 @@ namespace Assessment2.Views
                 return;
             }
 
-            if (phase == BoilerPhase.Operational)
-            {
-                Console.Write("Timer    : --");
-                return;
-            }
-
             Console.Write($"Timer : {phase} - {remainingSeconds:00} sec remaining");
         }
 

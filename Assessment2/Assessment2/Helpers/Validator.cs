@@ -40,7 +40,12 @@ namespace Assessment2.Helpers
 
         public bool CanStop(BoilerStatus status)
         {
-            return status == BoilerStatus.Running;
+            if (status == BoilerStatus.Running || status == BoilerStatus.Operational)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public bool CanSimulateError(BoilerStatus status)

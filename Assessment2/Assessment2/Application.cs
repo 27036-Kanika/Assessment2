@@ -1,6 +1,8 @@
 ﻿using Assessment2.Enums;
+using Assessment2.FileHandler;
 using Assessment2.Helpers;
 using Assessment2.Models;
+using Assessment2.Repository;
 using Assessment2.Services;
 using Assessment2.Views;
 
@@ -10,32 +12,40 @@ namespace Assessment2
     {
 
         private readonly IBoilerService _boilerService;
+        private readonly IEventLogService _eventLogService;
         private readonly MainView _mainView;
+        private readonly EventLogView _eventLogView;
         private readonly Validator _validator;
         private readonly CancellationTokenSource _applicationCancellation = new();
         private Task? _boilerOperationTask;
+        private bool _isEventLogVisible;
 
         public Application()
         {
             Validator validator = new();
+            IFileHandler fileHandler = new CSVFileHandler();
+            IEventLogRepository eventLogRepository = new EventLogRepository(fileHandler);
+            _eventLogService = new EventLogService(eventLogRepository);
             Boiler boiler = new();
-            _boilerService = new BoilerService(boiler, validator);
+            _boilerService = new BoilerService(boiler, _eventLogService, validator);
             ConsoleIO consoleOperations = new();
             _mainView = new MainView(consoleOperations);
+            _eventLogView = new EventLogView(consoleOperations);
             _validator = validator;
+            SubscribeToEvents();
         }
         public async Task Run()
         {
             try
             {
                 Console.CursorVisible = false;
+                await _eventLogService.InitializeAsync(_applicationCancellation.Token);
                 DisplayDashboard();
                 await _boilerService.Initialize(_applicationCancellation.Token);
                 await RunMenuLoop();
             }
             catch (OperationCanceledException)
             {
-                // Application cancellation is handled during shutdown.
             }
             catch (Exception exception)
             {
@@ -93,6 +103,10 @@ namespace Assessment2
                     await _boilerService.Reset(_applicationCancellation.Token);
                     break;
 
+                case MenuOptions.ViewEventLog:
+                    await ShowEventLog();
+                    break;
+
                 case MenuOptions.Exit:
                     return false;
             }
@@ -122,6 +136,22 @@ namespace Assessment2
             }
         }
 
+        private async Task ShowEventLog()
+        {
+            _isEventLogVisible = true;
+
+            try
+            {
+                IReadOnlyList<EventLog> logs = await _eventLogService.GetAllLogs(_applicationCancellation.Token);
+                _eventLogView.DisplayLogs(logs);
+                _eventLogView.WaitForEscape();
+            }
+            finally
+            {
+                _isEventLogVisible = false;
+                DisplayDashboard();
+            }
+        }
         private void DisplayDashboard()
         {
             _mainView.DisplayDashboard(
@@ -131,6 +161,44 @@ namespace Assessment2
                 _boilerService.GetRemainingTime());
         }
 
+        private void SubscribeToEvents()
+        {
+            _boilerService.NotificationOccurred += OnNotificationOccurred;
+            _boilerService.StatusChanged += OnStatusChanged;
+            _boilerService.TimerUpdated += OnTimerUpdated;
+        }
+
+        private void OnNotificationOccurred(
+            object? sender,
+            NotificationEventArgs eventArgs)
+        {
+            if (!_isEventLogVisible)
+            {
+                _mainView.DisplayNotification(eventArgs);
+            }
+        }
+
+        private void OnStatusChanged(
+            object? sender,
+            StatusChangedEventArgs eventArgs)
+        {
+            if (!_isEventLogVisible)
+            {
+                _mainView.DisplayStatusChanged(eventArgs);
+            }
+        }
+
+        private void OnTimerUpdated(
+            object? sender,
+            EventArgs eventArgs)
+        {
+            if (!_isEventLogVisible)
+            {
+                _mainView.DisplayTimer(
+                    _boilerService.GetCurrentPhase(),
+                    _boilerService.GetRemainingTime());
+            }
+        }
         private async Task Stop()
         {
             _applicationCancellation.Cancel();

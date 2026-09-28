@@ -9,6 +9,7 @@ namespace Assessment2.Services
         private const int PhaseDurationSeconds = 10;
 
         private readonly Boiler _boiler;
+        private readonly IEventLogService _eventLogService;
         private readonly Validator _validator;
 
         private CancellationTokenSource? _operationCancellation;
@@ -17,9 +18,11 @@ namespace Assessment2.Services
 
         public BoilerService(
             Boiler boiler,
+            IEventLogService eventLogService,
             Validator validator)
         {
             _boiler = boiler;
+            _eventLogService = eventLogService;
             _validator = validator;
         }
 
@@ -33,6 +36,7 @@ namespace Assessment2.Services
             _boiler.UpdatePhase(BoilerPhase.None);
             _boiler.SetInterlock(InterlockState.Open);
             _boiler.SetRemainingTime(0);
+            await _eventLogService.Log(LogType.Info, _boiler.Status, "Boiler Initialized.", cancellationToken);
             await RaiseNotification("Boiler Controller Initialized", LogType.Info, cancellationToken);
         }
 
@@ -81,18 +85,25 @@ namespace Assessment2.Services
                 await RunPhase(BoilerPhase.Ignition, _operationCancellation.Token);
                 _boiler.UpdatePhase(BoilerPhase.None);
                 _boiler.SetRemainingTime(0);
+                _boiler.UpdatePhase(BoilerPhase.Operational);
                 await ChangeStatus(BoilerStatus.Operational, _operationCancellation.Token);
-
                 await Notify(
                     "Boiler is now operational.",
                     LogType.Success,
                     _operationCancellation.Token);
+
+                //await RunPhase(BoilerPhase.Operational, _operationCancellation.Token);
+                //await Notify(
+                //    "Boiler sequence stopped.",
+                //    LogType.Success,
+                //    _operationCancellation.Token);
+                // await ChangeStatus(BoilerStatus.Lockout, _operationCancellation.Token);
             }
             catch (OperationCanceledException)
             {
                 _boiler.UpdatePhase(BoilerPhase.None);
                 _boiler.SetRemainingTime(0);
-                await ChangeStatus(BoilerStatus.Ready, CancellationToken.None);
+                await ChangeStatus(BoilerStatus.Lockout, CancellationToken.None);
 
                 await Notify(
                     "Boiler sequence stopped.",
@@ -123,13 +134,14 @@ namespace Assessment2.Services
             if (!_validator.CanStop(_boiler.Status))
             {
                 await Notify(
-                    "Boiler is not currently running.",
+                    "Boiler is not running.",
                     LogType.Warning,
                     cancellationToken);
                 return;
             }
 
             _operationCancellation?.Cancel();
+            await ChangeStatus(BoilerStatus.Lockout, CancellationToken.None);
         }
 
         public async Task SimulateError(CancellationToken cancellationToken)
@@ -148,7 +160,7 @@ namespace Assessment2.Services
                 return;
             }
 
-            //_operationCancellation?.Cancel();
+            _operationCancellation?.Cancel();
             DisposeTimer();
 
             await ChangeStatus(BoilerStatus.Lockout, CancellationToken.None);
@@ -164,6 +176,7 @@ namespace Assessment2.Services
             LogType type,
             CancellationToken cancellationToken)
         {
+            await _eventLogService.Log(type, _boiler.Status, message, cancellationToken);
             await RaiseNotification(message, type, cancellationToken);
         }
 
@@ -233,9 +246,7 @@ namespace Assessment2.Services
             }
         }
 
-#pragma warning disable CS1998 
         private async Task ChangeStatus(BoilerStatus newStatus, CancellationToken cancellationToken)
-#pragma warning restore CS1998 
         {
             BoilerStatus previousStatus = _boiler.Status;
             if (previousStatus == newStatus)
@@ -251,6 +262,11 @@ namespace Assessment2.Services
                     newStatus,
                     _boiler.Phase,
                     _boiler.Interlock));
+            await _eventLogService.Log(
+                LogType.Info,
+                newStatus,
+                $"Boiler Status changed from {previousStatus} to {newStatus}.",
+                cancellationToken);
         }
 
         private async Task RaiseNotification(
