@@ -68,6 +68,15 @@ namespace Assessment2.Services
         public async Task ToggleInterlock(CancellationToken cancellationToken)
         {
             InterlockState newState = _boiler.Interlock == InterlockState.Open ? InterlockState.Closed : InterlockState.Open;
+            if (!_validator.CanToggleInterlock(_boiler.Status, newState))
+            {
+                string errorMessage = _validator.GetInvalidMessage(
+                    MenuOptions.ToggleInterlock,
+                    _boiler.Status,
+                    newState);
+                await Notify(errorMessage, LogType.Warning, cancellationToken);
+                return;
+            }
             _boiler.SetInterlock(newState);
             string message = $"Interlock Switch toggled to {newState}.";
             BoilerStatus boilerStatus = _boiler.Status;

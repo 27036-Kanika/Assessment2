@@ -90,6 +90,14 @@ namespace Assessment2.Helpers
         }
 
         /// <summary>
+        /// Checks if the interlock can be toggled based on the current boiler status. The interlock can be toggled only when the boiler is not running or operational.
+        /// </summary>
+        public bool CanToggleInterlock(BoilerStatus status, InterlockState interlock)
+        {
+            return status != BoilerStatus.Running && status != BoilerStatus.Operational;
+        }
+
+        /// <summary>
         /// Invalid message for the menu option based on the current status and interlock state.
         /// </summary>
         /// <param name="option">Menu option</param>

@@ -4,6 +4,9 @@ using Assessment2.Repository;
 
 namespace Assessment2.Services
 {
+    /// <summary>
+    /// EventLogService is responsible for logging events related to the boiler's operation and status changes. 
+    /// </summary>
     internal class EventLogService : IEventLogService
     {
         private readonly IEventLogRepository _eventLogRepository;
